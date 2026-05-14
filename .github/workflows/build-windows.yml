@@ -76,4 +76,4 @@ jobs:
       uses: actions/upload-artifact@v6
       with:
         name: Amulet-${{ github.event.release.tag_name }}-${{ runner.os }}-${{ matrix.cfg.architecture }}
-        path: ./installer/dist
+        path: ./installer/dist 
