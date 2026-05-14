@@ -1,38 +1,40 @@
-name: Build Windows
+name: Build Windows EXE
 
 on:
-  workflow_dispatch: # 允许你手动点击按钮触发
+  workflow_dispatch: # 开启手动点击运行按钮
   push:
     branches:
-      - '0.10' 
+      - '0.10'    # 确保这里的名字和你当前的分支名一致
 
 jobs:
-  deploy:
+  build:
     runs-on: windows-latest
-    defaults:
-      run:
-        shell: bash
-
+    
     steps:
-    - name: Clone
-      uses: actions/checkout@v6
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip' # 开启缓存加速后续构建
 
-    - name: Install dependencies
-      run: |
-        pip install .
-        pip install pyinstaller
+      - name: Install dependencies
+        run: |
+          # 这一步非常重要：必须先安装项目本身，否则 .spec 文件里的 import 语句会报错
+          pip install .
+          pip install pyinstaller platformdirs
 
-    - name: PyInstaller build
-      run: |
-        python -m PyInstaller -y --distpath ./installer/dist installer/Amulet.spec
+      - name: Run PyInstaller
+        run: |
+          # 使用你 .spec 里的逻辑进行打包
+          # 指定输出目录为 ./dist_output
+          python -m PyInstaller -y --distpath ./dist_output installer/Amulet.spec
 
-    - name: Upload Build Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Amulet-Windows-Build
-        path: ./installer/
+      - name: Upload Finished EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Amulet-Map-Editor-Windows
+          # 根据 .spec 里的 COLLECT 命名，成品会在 dist_output/amulet 文件夹里
+          path: ./dist_output/amulet/
